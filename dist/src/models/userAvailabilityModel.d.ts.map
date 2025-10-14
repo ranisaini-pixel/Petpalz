@@ -1,0 +1,1 @@
+{"version":3,"file":"userAvailabilityModel.d.ts","sourceRoot":"","sources":["../../../src/models/userAvailabilityModel.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,EAAE,EAAE,QAAQ,EAAU,QAAQ,EAAE,MAAM,UAAU,CAAC;AAEhE,MAAM,WAAW,iBAAkB,SAAQ,QAAQ;IACjD,MAAM,EAAE,QAAQ,CAAC;IACjB,MAAM,EAAE,IAAI,CAAC;CACd;AAqBD,QAAA,MAAM,qBAAqB;;;;OAG1B,CAAC;AAEF,eAAe,qBAAqB,CAAC"}

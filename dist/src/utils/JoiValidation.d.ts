@@ -1,0 +1,24 @@
+import * as Joi from "joi";
+export declare const signupUserValidation: Joi.ObjectSchema<any>;
+export declare const loginUserValidation: Joi.ObjectSchema<any>;
+export declare const sendOTPValidation: Joi.ObjectSchema<any>;
+export declare const OTPVerificationValidation: Joi.ObjectSchema<any>;
+export declare const updateValidation: Joi.ObjectSchema<any>;
+export declare const updateUserValidation: Joi.ObjectSchema<any>;
+export declare const resetPasswordValidation: Joi.ObjectSchema<any>;
+export declare const changePasswordValidation: Joi.ObjectSchema<any>;
+export declare const addCongregationValidation: Joi.ObjectSchema<any>;
+export declare const updateCSCValidation: Joi.ObjectSchema<any>;
+export declare const searchTearmValidation: Joi.ObjectSchema<any>;
+export declare const deleteStudentValidation: Joi.ObjectSchema<any>;
+export declare const createCountryValidation: Joi.ObjectSchema<any>;
+export declare const getByIdValidation: Joi.ObjectSchema<any>;
+export declare const deleteCSCValidation: Joi.ObjectSchema<any>;
+export declare const createStateValidation: Joi.ObjectSchema<any>;
+export declare const createCityValidation: Joi.ObjectSchema<any>;
+export declare const userAvailabilityValidation: Joi.ObjectSchema<any>;
+export declare const userAvailabilityRequestValidation: Joi.ObjectSchema<any>;
+export declare const respondToAvailabilityRequestValidation: Joi.ObjectSchema<any>;
+export declare const requestListValidation: Joi.ObjectSchema<any>;
+export declare const requestListByIdValidation: Joi.ObjectSchema<any>;
+//# sourceMappingURL=JoiValidation.d.ts.map

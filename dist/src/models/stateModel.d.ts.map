@@ -1,0 +1,1 @@
+{"version":3,"file":"stateModel.d.ts","sourceRoot":"","sources":["../../../src/models/stateModel.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,EAAE,EAAE,QAAQ,EAAU,QAAQ,EAAE,MAAM,UAAU,CAAC;AAEhE,MAAM,WAAW,MAAO,SAAQ,QAAQ;IACtC,IAAI,EAAE,MAAM,CAAC;IACb,SAAS,EAAE,QAAQ,CAAC;CACrB;AAuBD,QAAA,MAAM,UAAU;;;;OAAgD,CAAC;AACjE,eAAe,UAAU,CAAC"}
