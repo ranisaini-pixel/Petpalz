@@ -1,11 +1,15 @@
 import * as express from "express";
-import mongoose from "mongoose";
-import { MONGO_URI } from "./constant";
 import * as dotenv from "dotenv";
 import * as cors from "cors";
+import { App } from "./src/app";
 import * as cookieparser from "cookie-parser";
+import { connectDB } from "./src/db/dbConnection";
 
 dotenv.config();
+const port = process.env.PORT || 3000;
+const base_url = process.env.BASE_URL || "";
+
+const myApp = new App(port, base_url);
 
 const app = express();
 
@@ -27,15 +31,12 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieparser());
 
-mongoose
-  .connect(MONGO_URI)
+connectDB
   .then(() => {
     console.log("MongoDB connected");
-
-    app.listen(process.env.PORT, () => {
-      console.log(`Server running on http://localhost:${process.env.PORT}`);
-    });
+    myApp.initialize(); // Start the server
   })
   .catch((err) => {
-    console.error("MongoDB connection error:", err);
+    console.error("Server connection error:", err);
+    process.exit();
   });

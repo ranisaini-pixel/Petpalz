@@ -1,6 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
+var SSOType;
+(function (SSOType) {
+    SSOType["google"] = "1";
+    SSOType["apple"] = "2";
+    SSOType["twitter"] = "3";
+    SSOType["facebook"] = "4";
+})(SSOType || (SSOType = {}));
+const socialDetailSchema = new mongoose_1.Schema({
+    SSOType: {
+        type: String,
+        enum: SSOType,
+    },
+    socialId: {
+        type: String,
+    },
+}, { _id: false });
 const userSchema = new mongoose_1.Schema({
     userName: {
         type: String,
@@ -37,6 +53,11 @@ const userSchema = new mongoose_1.Schema({
     otpExpiration: {
         type: Date,
     },
+    dateOfBirth: {
+        type: Date,
+        required: true,
+    },
+    socialDetails: [socialDetailSchema],
     token: {
         type: String,
     },
@@ -50,6 +71,6 @@ const userSchema = new mongoose_1.Schema({
     collection: "users",
     versionKey: false,
 });
-const userModel = mongoose_1.default.model("users", userSchema);
-exports.default = userModel;
-//# sourceMappingURL=userModel.js.map
+const user = mongoose_1.default.model("users", userSchema);
+exports.default = user;
+//# sourceMappingURL=user.js.map
