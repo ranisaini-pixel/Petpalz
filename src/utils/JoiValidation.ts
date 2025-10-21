@@ -95,8 +95,6 @@ export const IDValidation = Joi.object({
 });
 
 export const SSOValidation = Joi.object({
-  // email, SSOType, socialId
-
   email: Joi.string()
     .email({ tlds: { allow: ["com", "in"] } })
     .required(),
@@ -190,29 +188,6 @@ export const changePasswordValidation = Joi.object({
     }),
 });
 
-export const addCongregationValidation = Joi.object({
-  congregationName: Joi.string().trim().required().messages({
-    "string.empty": "First Name is required",
-  }),
-  congregationState: Joi.string().trim().required().messages({
-    "string.empty": "Last Name is required",
-  }),
-  congregationCity: Joi.string().trim().required().messages({
-    "string.empty": "Last Name is required",
-  }),
-  zipCode: Joi.string()
-    .pattern(/^[0-9]+$/)
-    .min(6)
-    .max(6)
-    .required()
-    .messages({
-      "string.empty": "Pin Code is required",
-      "string.min": "Pin Code must be at least 6 characters long",
-      "string.pattern.base":
-        "Password must only contain numbers (no special characters and characters).",
-    }),
-});
-
 export const searchTearmValidation = Joi.object({
   searchTerm: Joi.string().trim().required().messages({
     "string.empty": "searchTearm is required",
@@ -252,4 +227,18 @@ export const requestListByIdValidation = Joi.object({
     "string.hex": "_id must be a valid hex string",
     "string.length": "_id must be 24 characters long",
   }),
+});
+
+export const createPostValidation = Joi.object({
+  file: Joi.string().optional(),
+  content: Joi.string().min(5).max(150).required(),
+  author: Joi.string().hex().length(24).required().messages({
+    "string.empty": "_id is required",
+    "string.hex": "_id must be a valid hex string",
+    "string.length": "_id must be 24 characters long",
+  }),
+});
+
+export const updatePostValidation = Joi.object({
+  content: Joi.string().min(5).max(150).required(),
 });

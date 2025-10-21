@@ -20,6 +20,7 @@ export interface IUser extends Document {
   mobileNumber: Number;
   isMobileVerified: boolean;
   password?: string;
+  profileImage: string;
   otp: string;
   otpExpiration: Date;
   token: string;
@@ -71,6 +72,9 @@ const userSchema: Schema<IUser> = new Schema(
       type: String,
       unique: true,
       required: true,
+    },
+    profileImage: {
+      type: String,
     },
     otp: {
       type: String,

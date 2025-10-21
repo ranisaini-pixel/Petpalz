@@ -6,6 +6,11 @@ export const SUCCESS_MESSAGES = {
   USER_DETAILS_UPDATED: "User social details updated successfully",
   USER_LIST_FETCHED: "Users fetched successfully",
   USER_DETAILS: "User Details fetched successfully",
+  POST_CREATED: "Post created successfully",
+  POST_UPDATED: "Post updated successfully",
+  POST_FOUND: "Post fetched successfully",
+  POST_LIST_FOUND: "Post list Fetched successfully",
+  POST_DELETED: "Post deleted successfully",
 };
 
 export const ERROR_MESSAGES = {
@@ -20,4 +25,8 @@ export const ERROR_MESSAGES = {
   INVALID_OTP: "Invalid OTP",
   OTP_EXPIRED: "OTP expired",
   USER_LIST_NOT_FOUND: "Users list not found",
+  POST_NOT_CREATED: "Post not created",
+  POST_NOT_UPDATED: "Post not updated",
+  POST_NOT_FOUND: "Post not found",
+  POST_NOT_DELETED: "Post not deleted",
 };

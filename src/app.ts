@@ -1,7 +1,11 @@
 import * as express from "express";
 import { Application } from "express";
 import userRoute from "./routes/userRoutes";
+import postRoute from "./routes/postRoute";
+import * as cookieparser from "cookie-parser";
+import * as cors from "cors";
 import * as dotenv from "dotenv";
+import path = require("path");
 
 dotenv.config();
 
@@ -33,9 +37,32 @@ export class App {
   private initializeMiddlewares(): void {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(
+      "/uploads",
+      express.static(path.join(__dirname, "../uploads"))
+    ); // Serve static files (e.g., uploaded images)
+
+    this.app.use(
+      cors({
+        origin: process.env.CORS_ORIGIN,
+        credentials: true,
+      })
+    );
+
+    this.app.use(
+      express.json({
+        limit: "16kb",
+      })
+    );
+
+    this.app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+
+    this.app.use(express.static("public"));
+    this.app.use(cookieparser());
   }
 
   private initializeRoutes(): void {
     this.app.use("/api/v1/users", userRoute);
+    this.app.use("/api/v1/posts", postRoute);
   }
 }

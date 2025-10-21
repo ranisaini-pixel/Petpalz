@@ -19,7 +19,6 @@ const verifyJWT = async (req, res, next) => {
         if (!userToken) {
             throw new ApiError_1.ApiError(401, "Unauthorized request");
         }
-        console.log(userToken.token, "=========================================================");
         if (token !== userToken?.token) {
             throw new ApiError_1.ApiError(401, "Unauthorized request");
         }

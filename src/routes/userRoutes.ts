@@ -21,11 +21,13 @@ import {
   signupUserValidation,
   SSOValidation,
 } from "../utils/JoiValidation";
+import upload from "../middleware/multer";
 const router: Router = Router();
 
 router.post(
   "/signup_user",
-  globalValidator(signupUserValidation, "body"),
+  // globalValidator(signupUserValidation, "body"),
+  upload.single("profileImage"),
   signup
 );
 

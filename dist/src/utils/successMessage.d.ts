@@ -6,6 +6,11 @@ export declare const SUCCESS_MESSAGES: {
     USER_DETAILS_UPDATED: string;
     USER_LIST_FETCHED: string;
     USER_DETAILS: string;
+    POST_CREATED: string;
+    POST_UPDATED: string;
+    POST_FOUND: string;
+    POST_LIST_FOUND: string;
+    POST_DELETED: string;
 };
 export declare const ERROR_MESSAGES: {
     USER_NOT_CREATED: string;
@@ -19,5 +24,9 @@ export declare const ERROR_MESSAGES: {
     INVALID_OTP: string;
     OTP_EXPIRED: string;
     USER_LIST_NOT_FOUND: string;
+    POST_NOT_CREATED: string;
+    POST_NOT_UPDATED: string;
+    POST_NOT_FOUND: string;
+    POST_NOT_DELETED: string;
 };
 //# sourceMappingURL=successMessage.d.ts.map

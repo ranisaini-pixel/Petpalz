@@ -25,6 +25,8 @@ export const signup = async (
       socialDetails,
     } = req.body;
 
+    const profileImage = req.file;
+
     const existedUser = await user.findOne({ email });
 
     if (existedUser) {
@@ -42,6 +44,7 @@ export const signup = async (
         password: hashedPassword,
         mobileNumber,
         dateOfBirth,
+        profileImage: profileImage?.filename,
       });
 
       if (socialDetails && socialDetails.length > 0) {

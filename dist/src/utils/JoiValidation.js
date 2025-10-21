@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.requestListByIdValidation = exports.requestListValidation = exports.searchTearmValidation = exports.addCongregationValidation = exports.changePasswordValidation = exports.resetPasswordValidation = exports.SSOValidation = exports.IDValidation = exports.OTPVerificationValidation = exports.sendMobileOTPValidation = exports.sendEmailOTPValidation = exports.loginUserValidation = exports.checkEmailValidation = exports.signupUserValidation = void 0;
+exports.updatePostValidation = exports.createPostValidation = exports.requestListByIdValidation = exports.requestListValidation = exports.searchTearmValidation = exports.changePasswordValidation = exports.resetPasswordValidation = exports.SSOValidation = exports.IDValidation = exports.OTPVerificationValidation = exports.sendMobileOTPValidation = exports.sendEmailOTPValidation = exports.loginUserValidation = exports.checkEmailValidation = exports.signupUserValidation = void 0;
 const BaseJoi = require("joi");
 const date_1 = require("@joi/date");
 const Joi = BaseJoi.extend(date_1.default);
@@ -86,7 +86,6 @@ exports.IDValidation = Joi.object({
     }),
 });
 exports.SSOValidation = Joi.object({
-    // email, SSOType, socialId
     email: Joi.string()
         .email({ tlds: { allow: ["com", "in"] } })
         .required(),
@@ -154,27 +153,6 @@ exports.changePasswordValidation = Joi.object({
         "string.pattern.name": "Password must include at least 1 uppercase, 1 lowercase, 1 number, and 1 special character",
     }),
 });
-exports.addCongregationValidation = Joi.object({
-    congregationName: Joi.string().trim().required().messages({
-        "string.empty": "First Name is required",
-    }),
-    congregationState: Joi.string().trim().required().messages({
-        "string.empty": "Last Name is required",
-    }),
-    congregationCity: Joi.string().trim().required().messages({
-        "string.empty": "Last Name is required",
-    }),
-    zipCode: Joi.string()
-        .pattern(/^[0-9]+$/)
-        .min(6)
-        .max(6)
-        .required()
-        .messages({
-        "string.empty": "Pin Code is required",
-        "string.min": "Pin Code must be at least 6 characters long",
-        "string.pattern.base": "Password must only contain numbers (no special characters and characters).",
-    }),
-});
 exports.searchTearmValidation = Joi.object({
     searchTerm: Joi.string().trim().required().messages({
         "string.empty": "searchTearm is required",
@@ -212,5 +190,17 @@ exports.requestListByIdValidation = Joi.object({
         "string.hex": "_id must be a valid hex string",
         "string.length": "_id must be 24 characters long",
     }),
+});
+exports.createPostValidation = Joi.object({
+    file: Joi.string().optional(),
+    content: Joi.string().min(5).max(150).required(),
+    author: Joi.string().hex().length(24).required().messages({
+        "string.empty": "_id is required",
+        "string.hex": "_id must be a valid hex string",
+        "string.length": "_id must be 24 characters long",
+    }),
+});
+exports.updatePostValidation = Joi.object({
+    content: Joi.string().min(5).max(150).required(),
 });
 //# sourceMappingURL=JoiValidation.js.map

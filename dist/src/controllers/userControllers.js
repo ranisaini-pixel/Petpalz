@@ -85,6 +85,9 @@ const loginUser = async (req, res, next) => {
                     $set: {
                         token: token,
                     },
+                }, {
+                    new: true,
+                    upsert: true,
                 });
                 return res
                     .status(200)
@@ -187,50 +190,14 @@ const SSOLogin = async (req, res, next) => {
 exports.SSOLogin = SSOLogin;
 const getUsersById = async (req, res, next) => {
     try {
-        const { searchTerm = "" } = req.query;
         const userId = res.locals.user;
         if (!userId) {
             return next(new ApiError_1.ApiError(404, successMessage_1.ERROR_MESSAGES.USER_NOT_EXISTS));
         }
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
-        const pipeline = [];
-        pipeline.push({
-            $match: {
-                _id: userId,
-            },
-        }, {
-            $project: {
-                userName: 1,
-                fullName: 1,
-                email: 1,
-                isEmailVerified: 1,
-                mobileNumber: 1,
-                isMobileVerified: 1,
-                dateOfBirth: 1,
-            },
-        });
-        pipeline.push({ $sort: { createdAt: -1 } }, { $skip: skip }, { $limit: limit });
-        const users = await user_1.default.aggregate(pipeline);
-        const totalUsers = await user_1.default.countDocuments(searchTerm
-            ? {
-                $or: [
-                    { userName: { $regex: searchTerm, $options: "i" } },
-                    { fullName: { $regex: searchTerm, $options: "i" } },
-                    { email: { $regex: searchTerm, $options: "i" } },
-                ],
-            }
-            : {});
-        return res.status(200).json(new ApiResponse_1.ApiResponse(200, successMessage_1.SUCCESS_MESSAGES.USER_DETAILS, {
-            pagination: {
-                total: totalUsers,
-                page,
-                limit,
-                totalPages: Math.ceil(totalUsers / limit),
-            },
-            users,
-        }));
+        const userDetails = await user_1.default.findById(userId);
+        return res
+            .status(200)
+            .json(new ApiResponse_1.ApiResponse(200, successMessage_1.SUCCESS_MESSAGES.USER_DETAILS, userDetails));
     }
     catch (error) {
         console.error("Error", error);
