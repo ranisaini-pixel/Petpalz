@@ -1,11 +1,10 @@
 import * as express from "express";
 import { Application } from "express";
-import userRoute from "./routes/userRoutes";
-import postRoute from "./routes/postRoute";
 import * as cookieparser from "cookie-parser";
 import * as cors from "cors";
 import * as dotenv from "dotenv";
 import path = require("path");
+import routev1 from "./routes/routev1";
 
 dotenv.config();
 
@@ -40,7 +39,7 @@ export class App {
     this.app.use(
       "/uploads",
       express.static(path.join(__dirname, "../uploads"))
-    ); // Serve static files (e.g., uploaded images)
+    ); // Serve static files
 
     this.app.use(
       cors({
@@ -62,7 +61,6 @@ export class App {
   }
 
   private initializeRoutes(): void {
-    this.app.use("/api/v1/users", userRoute);
-    this.app.use("/api/v1/posts", postRoute);
+    this.app.use("/api/v1", routev1);
   }
 }

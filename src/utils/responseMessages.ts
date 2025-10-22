@@ -11,6 +11,9 @@ export const SUCCESS_MESSAGES = {
   POST_FOUND: "Post fetched successfully",
   POST_LIST_FOUND: "Post list Fetched successfully",
   POST_DELETED: "Post deleted successfully",
+  COMMENT_ADDED: "Comment added successfully",
+  COMMENT_UPDATED: "Comment updated successfully",
+  COMMENT_DELETED: "Comment deleted successfully",
 };
 
 export const ERROR_MESSAGES = {
@@ -29,4 +32,9 @@ export const ERROR_MESSAGES = {
   POST_NOT_UPDATED: "Post not updated",
   POST_NOT_FOUND: "Post not found",
   POST_NOT_DELETED: "Post not deleted",
+  UNAUTHORIZED_ACTION: "You are not authorized user",
+  COMMENT_NOT_FOUND: "Comment not found",
+  COMMENT_NOT_UPDATED: "Comment not updated",
+  COMMENT_NOT_DELETED: "Comment not deleted",
+  UPLOAD_FAILED: "No file uploaded",
 };

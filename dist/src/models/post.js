@@ -6,7 +6,7 @@ const postSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
-    author: {
+    userId: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: "users",
         required: true,
@@ -19,6 +19,11 @@ const postSchema = new mongoose_1.Schema({
         type: Number,
         default: 0,
     },
+    files: [
+        {
+            type: String,
+        },
+    ],
     isDeleted: {
         type: Boolean,
         default: false,

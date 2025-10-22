@@ -6,7 +6,6 @@ import {
   createPost,
   deletePost,
   getPostById,
-  getPostByUserId,
   getPostsList,
   updatePost,
 } from "../controllers/postControllers";
@@ -18,46 +17,30 @@ import {
 
 const router: Router = Router();
 
+router.get("/post-list", getPostsList);
+
 router.use(verifyJWT);
 router.post(
-  "/create_post",
+  "/create-post",
   // globalValidator(createPostValidation, "body"),
   upload.array("files", 5),
   createPost
 );
 
 router.put(
-  "/update_post/:_id",
+  "/update-post/:_id",
   globalValidator(IDValidation, "params"),
-  globalValidator(updatePostValidation, "body"),
+  // globalValidator(updatePostValidation, "body"),
+  upload.array("files", 5),
   updatePost
 );
 
-router.delete("/delete_post/:_id", deletePost);
+router.delete("/delete-post/:_id", deletePost);
 
 router.get(
-  "/post_details/:_id",
+  "/post-details/:_id",
   globalValidator(IDValidation, "params"),
   getPostById
 );
 
-router.get("/all_post_details", getPostByUserId);
-
-router.get("/post_list", getPostsList);
-
 export default router;
-
-// Multiple files upload
-// router.post(
-//   "/upload-multiple",
-//   upload.array("files", 5),
-//   (req: Request, res: Response) => {
-//     if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
-//       return res.status(400).json({ message: "No files uploaded" });
-//     }
-//     res.status(200).json({
-//       message: "Files uploaded successfully",
-//       files: req.files,
-//     });
-//   }
-// );

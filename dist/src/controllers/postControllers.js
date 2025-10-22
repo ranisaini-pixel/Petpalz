@@ -1,29 +1,33 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePost = exports.getPostsList = exports.getPostByUserId = exports.getPostById = exports.updatePost = exports.createPost = void 0;
+exports.deletePost = exports.getPostsList = exports.getPostById = exports.updatePost = exports.createPost = void 0;
 const dotenv = require("dotenv");
 const ApiError_1 = require("../utils/ApiError");
 const ApiResponse_1 = require("../utils/ApiResponse");
 const post_1 = require("../models/post");
-const successMessage_1 = require("../utils/successMessage");
-const mongoose_1 = require("mongoose");
+const responseMessages_1 = require("../utils/responseMessages");
 dotenv.config();
 const createPost = async (req, res, next) => {
     try {
-        const content = req.file;
-        const author = req.file;
-        const file = req.file;
-        if (!file) {
-            return res.status(400).json({ message: "No file uploaded" });
+        const userToken = res.locals.user;
+        const { userId, content } = req.body;
+        const files = req.files;
+        if (!userToken) {
+            return next(new ApiError_1.ApiError(400, responseMessages_1.ERROR_MESSAGES.USER_NOT_EXISTS));
         }
+        if (!files || files.length === 0) {
+            return next(new ApiError_1.ApiError(400, responseMessages_1.ERROR_MESSAGES.UPLOAD_FAILED));
+        }
+        //extracting file path
+        const filePaths = files.map((file) => file.filename);
         const newPost = new post_1.default({
             content,
-            author,
-            file,
+            userId,
+            files: filePaths,
         });
         let postCreated = await newPost?.save();
         if (!postCreated) {
-            return next(new ApiError_1.ApiError(400, successMessage_1.ERROR_MESSAGES.POST_NOT_CREATED));
+            return next(new ApiError_1.ApiError(400, responseMessages_1.ERROR_MESSAGES.POST_NOT_CREATED));
         }
         const postWithAuthor = await post_1.default.aggregate([
             {
@@ -32,7 +36,7 @@ const createPost = async (req, res, next) => {
             {
                 $lookup: {
                     from: "users",
-                    localField: "author",
+                    localField: "userId",
                     foreignField: "_id",
                     as: "authorDetails",
                 },
@@ -43,16 +47,16 @@ const createPost = async (req, res, next) => {
             {
                 $project: {
                     content: 1,
+                    files: 1,
                     createdAt: 1,
                     "authorDetails._id": 1,
                     "authorDetails.username": 1,
-                    "authorDetails.profileImage": 1,
                 },
             },
         ]);
         return res
             .status(201)
-            .json(new ApiResponse_1.ApiResponse(201, successMessage_1.SUCCESS_MESSAGES.POST_CREATED, postWithAuthor));
+            .json(new ApiResponse_1.ApiResponse(201, responseMessages_1.SUCCESS_MESSAGES.POST_CREATED, postWithAuthor));
     }
     catch (error) {
         console.log(error);
@@ -62,26 +66,37 @@ const createPost = async (req, res, next) => {
 exports.createPost = createPost;
 const updatePost = async (req, res, next) => {
     try {
+        const userId = res.locals.user._id;
         const { _id } = req.params;
-        await post_1.default.findByIdAndUpdate({ _id }, {
+        if (!userId) {
+            return next(new ApiError_1.ApiError(404, responseMessages_1.ERROR_MESSAGES.USER_NOT_EXISTS));
+        }
+        const existingPost = await post_1.default.findById(_id);
+        if (!existingPost) {
+            return next(new ApiError_1.ApiError(404, responseMessages_1.ERROR_MESSAGES.POST_NOT_FOUND));
+        }
+        if (existingPost.userId.toString() !== userId.toString()) {
+            return next(new ApiError_1.ApiError(403, responseMessages_1.ERROR_MESSAGES.UNAUTHORIZED_ACTION));
+        }
+        let updatedFiles = [];
+        if (req.files && Array.isArray(req.files)) {
+            updatedFiles = req.files.map((file) => `${file.filename}`);
+        }
+        const updatedPost = await post_1.default.findByIdAndUpdate(_id, {
             $set: {
                 content: req.body.content,
+                files: updatedFiles.length > 0 ? updatedFiles : existingPost.files,
             },
-        }, {
-            new: true,
-        });
-        let updatedPostData = await post_1.default.findById({ _id });
-        if (!updatedPostData) {
-            return next(new ApiError_1.ApiError(400, successMessage_1.ERROR_MESSAGES.POST_NOT_UPDATED));
+        }, { new: true });
+        if (!updatedPost) {
+            return next(new ApiError_1.ApiError(400, responseMessages_1.ERROR_MESSAGES.POST_NOT_UPDATED));
         }
-        else {
-            return res
-                .status(200)
-                .json(new ApiResponse_1.ApiResponse(200, successMessage_1.SUCCESS_MESSAGES.POST_UPDATED, updatedPostData));
-        }
+        return res
+            .status(200)
+            .json(new ApiResponse_1.ApiResponse(200, responseMessages_1.SUCCESS_MESSAGES.POST_UPDATED, updatedPost));
     }
     catch (error) {
-        console.log("Error:", error);
+        console.error("Error", error);
         next(error);
     }
 };
@@ -91,7 +106,7 @@ const getPostById = async (req, res, next) => {
         const { postId } = req.params;
         const userId = res.locals.user;
         if (!userId) {
-            return next(new ApiError_1.ApiError(404, successMessage_1.ERROR_MESSAGES.USER_NOT_EXISTS));
+            return next(new ApiError_1.ApiError(404, responseMessages_1.ERROR_MESSAGES.USER_NOT_EXISTS));
         }
         const pipeline = [];
         pipeline.push({
@@ -100,17 +115,18 @@ const getPostById = async (req, res, next) => {
             },
         }, {
             $project: {
-                author: 1,
+                userId: 1,
                 content: 1,
+                files: 1,
             },
         });
         const postDetails = await post_1.default.aggregate(pipeline);
         const totalPosts = await post_1.default.countDocuments({ author: userId });
         if (!postDetails.length) {
-            return next(new ApiError_1.ApiError(400, successMessage_1.ERROR_MESSAGES.POST_NOT_FOUND));
+            return next(new ApiError_1.ApiError(400, responseMessages_1.ERROR_MESSAGES.POST_NOT_FOUND));
         }
         else {
-            return res.status(200).json(new ApiResponse_1.ApiResponse(200, successMessage_1.SUCCESS_MESSAGES.POST_FOUND, {
+            return res.status(200).json(new ApiResponse_1.ApiResponse(200, responseMessages_1.SUCCESS_MESSAGES.POST_FOUND, {
                 postDetails,
                 totalPosts,
             }));
@@ -122,41 +138,6 @@ const getPostById = async (req, res, next) => {
     }
 };
 exports.getPostById = getPostById;
-const getPostByUserId = async (req, res, next) => {
-    try {
-        const userId = res.locals.user;
-        if (!userId) {
-            return next(new ApiError_1.ApiError(404, successMessage_1.ERROR_MESSAGES.USER_NOT_EXISTS));
-        }
-        const pipeline = [];
-        pipeline.push({
-            $match: {
-                author: new mongoose_1.default.Types.ObjectId(userId),
-            },
-        }, {
-            $project: {
-                author: 1,
-                content: 1,
-            },
-        });
-        const postDetails = await post_1.default.aggregate(pipeline);
-        const totalPosts = await post_1.default.countDocuments({ author: userId });
-        if (!postDetails.length) {
-            return next(new ApiError_1.ApiError(400, successMessage_1.ERROR_MESSAGES.POST_NOT_FOUND));
-        }
-        else {
-            return res.status(200).json(new ApiResponse_1.ApiResponse(200, successMessage_1.SUCCESS_MESSAGES.POST_FOUND, {
-                postDetails,
-                totalPosts,
-            }));
-        }
-    }
-    catch (error) {
-        console.log("Error:", error);
-        next(error);
-    }
-};
-exports.getPostByUserId = getPostByUserId;
 const getPostsList = async (req, res, next) => {
     try {
         const { page = 1, limit = 10, searchTerm = "" } = req.query;
@@ -164,7 +145,7 @@ const getPostsList = async (req, res, next) => {
             {
                 $lookup: {
                     from: "users",
-                    localField: "author",
+                    localField: "userId",
                     foreignField: "_id",
                     as: "authorDetails",
                 },
@@ -203,12 +184,16 @@ const getPostsList = async (req, res, next) => {
                 userName: "$authorDetails.userName",
                 email: "$authorDetails.email",
                 content: 1,
+                profileImage: 1,
+                likeCount: 1,
+                commentCount: 1,
+                files: 1,
             },
         });
         pipeline.push({ $sort: { createdAt: -1 } }, { $skip: (Number(page) - 1) * Number(limit) }, { $limit: Number(limit) });
         const result = await post_1.default.aggregate(pipeline);
         const totalCount = await post_1.default.countDocuments(result);
-        return res.status(201).json(new ApiResponse_1.ApiResponse(201, successMessage_1.SUCCESS_MESSAGES.POST_LIST_FOUND, {
+        return res.status(201).json(new ApiResponse_1.ApiResponse(201, responseMessages_1.SUCCESS_MESSAGES.POST_LIST_FOUND, {
             result,
             page,
             limit,
@@ -226,7 +211,11 @@ const deletePost = async (req, res, next) => {
         const userId = res.locals.user._id;
         const { _id } = req.params;
         if (!userId) {
-            return next(new ApiError_1.ApiError(404, successMessage_1.ERROR_MESSAGES.USER_NOT_EXISTS));
+            return next(new ApiError_1.ApiError(404, responseMessages_1.ERROR_MESSAGES.USER_NOT_EXISTS));
+        }
+        const existingPost = await post_1.default.findById(_id);
+        if (existingPost?.userId.toString() !== userId.toString()) {
+            return next(new ApiError_1.ApiError(403, responseMessages_1.ERROR_MESSAGES.UNAUTHORIZED_ACTION));
         }
         const deleted = await post_1.default.findByIdAndUpdate({ _id }, {
             $set: {
@@ -234,12 +223,12 @@ const deletePost = async (req, res, next) => {
             },
         });
         if (!deleted) {
-            return next(new ApiError_1.ApiError(400, successMessage_1.ERROR_MESSAGES.POST_NOT_DELETED));
+            return next(new ApiError_1.ApiError(400, responseMessages_1.ERROR_MESSAGES.POST_NOT_DELETED));
         }
         else {
             return res
                 .status(200)
-                .json(new ApiResponse_1.ApiResponse(200, successMessage_1.SUCCESS_MESSAGES.POST_DELETED, null));
+                .json(new ApiResponse_1.ApiResponse(200, responseMessages_1.SUCCESS_MESSAGES.POST_DELETED, null));
         }
     }
     catch (error) {

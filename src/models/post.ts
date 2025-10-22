@@ -2,7 +2,7 @@ import mongoose, { Document, Schema, ObjectId } from "mongoose";
 
 export interface IPost extends Document {
   content: string;
-  author: ObjectId;
+  userId: ObjectId;
   files: string[];
   likeCount: number;
   commentCount: number;
@@ -15,7 +15,7 @@ const postSchema: Schema<IPost> = new Schema(
       type: String,
       required: true,
     },
-    author: {
+    userId: {
       type: Schema.Types.ObjectId,
       ref: "users",
       required: true,

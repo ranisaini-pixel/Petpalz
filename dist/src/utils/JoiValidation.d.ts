@@ -13,4 +13,7 @@ export declare const requestListValidation: any;
 export declare const requestListByIdValidation: any;
 export declare const createPostValidation: any;
 export declare const updatePostValidation: any;
+export declare const addCommentValidation: any;
+export declare const updateCommentValidation: any;
+export declare const updateValidation: any;
 //# sourceMappingURL=JoiValidation.d.ts.map

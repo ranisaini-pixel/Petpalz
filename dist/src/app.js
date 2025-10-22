@@ -2,12 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.App = void 0;
 const express = require("express");
-const userRoutes_1 = require("./routes/userRoutes");
-const postRoute_1 = require("./routes/postRoute");
 const cookieparser = require("cookie-parser");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
+const routev1_1 = require("./routes/routev1");
 dotenv.config();
 class App {
     constructor(port, base_url) {
@@ -31,7 +30,7 @@ class App {
     initializeMiddlewares() {
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
-        this.app.use("/uploads", express.static(path.join(__dirname, "../uploads"))); // Serve static files (e.g., uploaded images)
+        this.app.use("/uploads", express.static(path.join(__dirname, "../uploads"))); // Serve static files
         this.app.use(cors({
             origin: process.env.CORS_ORIGIN,
             credentials: true,
@@ -44,8 +43,7 @@ class App {
         this.app.use(cookieparser());
     }
     initializeRoutes() {
-        this.app.use("/api/v1/users", userRoutes_1.default);
-        this.app.use("/api/v1/posts", postRoute_1.default);
+        this.app.use("/api/v1", routev1_1.default);
     }
 }
 exports.App = App;

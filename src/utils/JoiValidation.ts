@@ -34,6 +34,9 @@ export const signupUserValidation = Joi.object({
       "string.pattern.base":
         "Password must only contain numbers (no special characters and characters).",
     }),
+  profilePicture: Joi.string().uri().allow("").optional().messages({
+    "string.uri": "Profile picture must be a valid URL",
+  }),
 });
 
 export const checkEmailValidation = Joi.object({
@@ -81,6 +84,17 @@ export const OTPVerificationValidation = Joi.object({
     .messages({
       "string.empty": "OTP is required",
       "string.min": "OTP must be at least 4 characters long",
+      "string.pattern.base":
+        "OTP must only contain numbers (no special characters and characters).",
+    }),
+  mobileNumber: Joi.string()
+    .pattern(/^[0-9]+$/)
+    .min(10)
+    .max(10)
+    .required()
+    .messages({
+      "string.empty": "Mobile Number is required",
+      "string.min": "Mobile Number must be at least 10 characters long",
       "string.pattern.base":
         "OTP must only contain numbers (no special characters and characters).",
     }),
@@ -189,11 +203,11 @@ export const changePasswordValidation = Joi.object({
 });
 
 export const searchTearmValidation = Joi.object({
-  searchTerm: Joi.string().trim().required().messages({
+  searchTerm: Joi.string().trim().messages({
     "string.empty": "searchTearm is required",
   }),
   limit: Joi.number().min(1).max(100).optional(),
-  page: Joi.number().min(1).max(100).required().messages({
+  page: Joi.number().min(1).max(100).messages({
     "string.empty": "Page is required",
   }),
 });
@@ -241,4 +255,34 @@ export const createPostValidation = Joi.object({
 
 export const updatePostValidation = Joi.object({
   content: Joi.string().min(5).max(150).required(),
+});
+
+export const addCommentValidation = Joi.object({
+  postId: Joi.string().hex().length(24).required().messages({
+    "string.empty": "_id is required",
+    "string.hex": "_id must be a valid hex string",
+    "string.length": "_id must be 24 characters long",
+  }),
+  content: Joi.string().trim().required().messages({
+    "string.empty": "Content is required",
+  }),
+  parentComment: Joi.string().hex().length(24).optional().messages({
+    "string.empty": "_id is required",
+    "string.hex": "_id must be a valid hex string",
+    "string.length": "_id must be 24 characters long",
+  }),
+});
+
+export const updateCommentValidation = Joi.object({
+  content: Joi.string().trim().required().messages({
+    "string.empty": "Content is required",
+  }),
+});
+
+export const updateValidation = Joi.object({
+  _id: Joi.string().hex().length(24).required().messages({
+    "string.empty": "_id is required",
+    "string.hex": "_id must be a valid hex string",
+    "string.length": "_id must be 24 characters long",
+  }),
 });

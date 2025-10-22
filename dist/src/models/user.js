@@ -47,11 +47,16 @@ const userSchema = new mongoose_1.Schema({
         unique: true,
         required: true,
     },
+    profileImage: {
+        type: String,
+    },
     otp: {
         type: String,
+        default: null,
     },
     otpExpiration: {
         type: Date,
+        default: null,
     },
     dateOfBirth: {
         type: Date,

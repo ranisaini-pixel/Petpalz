@@ -78,9 +78,11 @@ const userSchema: Schema<IUser> = new Schema(
     },
     otp: {
       type: String,
+      default: null,
     },
     otpExpiration: {
       type: Date,
+      default: null,
     },
     dateOfBirth: {
       type: Date,

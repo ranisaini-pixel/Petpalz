@@ -4,6 +4,7 @@ import { verifyJWT } from "../middleware/jwtVerify";
 import { globalValidator } from "../middleware/globalValidationHandler";
 import {
   checkEmail,
+  getUserPosts,
   getUsersById,
   getUsersList,
   loginUser,
@@ -25,42 +26,39 @@ import upload from "../middleware/multer";
 const router: Router = Router();
 
 router.post(
-  "/signup_user",
+  "/signup",
   // globalValidator(signupUserValidation, "body"),
   upload.single("profileImage"),
   signup
 );
 
 router.post(
-  "/check_email",
+  "/check-email",
   globalValidator(checkEmailValidation, "body"),
   checkEmail
 );
 
-router.post(
-  "/login_user",
-  globalValidator(loginUserValidation, "body"),
-  loginUser
-);
+router.post("/login", globalValidator(loginUserValidation, "body"), loginUser);
 
 router.post(
-  "/login_mobile_number",
+  "/login-mobile-number",
   globalValidator(sendMobileOTPValidation, "body"),
   loginWithMobileNumber
 );
 
 router.post(
-  "/verify_otp",
-  globalValidator(IDValidation, "query"),
+  "/verify-otp",
   globalValidator(OTPVerificationValidation, "body"),
   MobileOtpVerification
 );
 
-router.post("/sso_login", globalValidator(SSOValidation, "body"), SSOLogin);
+router.post("/sso-login", globalValidator(SSOValidation, "body"), SSOLogin);
 
 router.use(verifyJWT);
-router.get("/get_users_list", getUsersList);
+router.get("/get-users-list", getUsersList); //validation
 
-router.get("/user_details", getUsersById);
+router.get("/user-details", getUsersById);
+
+router.get("/all_post_details", getUserPosts);
 
 export default router;

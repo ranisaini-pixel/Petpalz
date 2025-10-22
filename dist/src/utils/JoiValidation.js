@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatePostValidation = exports.createPostValidation = exports.requestListByIdValidation = exports.requestListValidation = exports.searchTearmValidation = exports.changePasswordValidation = exports.resetPasswordValidation = exports.SSOValidation = exports.IDValidation = exports.OTPVerificationValidation = exports.sendMobileOTPValidation = exports.sendEmailOTPValidation = exports.loginUserValidation = exports.checkEmailValidation = exports.signupUserValidation = void 0;
+exports.updateValidation = exports.updateCommentValidation = exports.addCommentValidation = exports.updatePostValidation = exports.createPostValidation = exports.requestListByIdValidation = exports.requestListValidation = exports.searchTearmValidation = exports.changePasswordValidation = exports.resetPasswordValidation = exports.SSOValidation = exports.IDValidation = exports.OTPVerificationValidation = exports.sendMobileOTPValidation = exports.sendEmailOTPValidation = exports.loginUserValidation = exports.checkEmailValidation = exports.signupUserValidation = void 0;
 const BaseJoi = require("joi");
 const date_1 = require("@joi/date");
 const Joi = BaseJoi.extend(date_1.default);
@@ -33,6 +33,9 @@ exports.signupUserValidation = Joi.object({
         "string.empty": "Password is required",
         "string.min": "Password must be at least 6 characters long",
         "string.pattern.base": "Password must only contain numbers (no special characters and characters).",
+    }),
+    profilePicture: Joi.string().uri().allow("").optional().messages({
+        "string.uri": "Profile picture must be a valid URL",
     }),
 });
 exports.checkEmailValidation = Joi.object({
@@ -75,6 +78,16 @@ exports.OTPVerificationValidation = Joi.object({
         .messages({
         "string.empty": "OTP is required",
         "string.min": "OTP must be at least 4 characters long",
+        "string.pattern.base": "OTP must only contain numbers (no special characters and characters).",
+    }),
+    mobileNumber: Joi.string()
+        .pattern(/^[0-9]+$/)
+        .min(10)
+        .max(10)
+        .required()
+        .messages({
+        "string.empty": "Mobile Number is required",
+        "string.min": "Mobile Number must be at least 10 characters long",
         "string.pattern.base": "OTP must only contain numbers (no special characters and characters).",
     }),
 });
@@ -154,11 +167,11 @@ exports.changePasswordValidation = Joi.object({
     }),
 });
 exports.searchTearmValidation = Joi.object({
-    searchTerm: Joi.string().trim().required().messages({
+    searchTerm: Joi.string().trim().messages({
         "string.empty": "searchTearm is required",
     }),
     limit: Joi.number().min(1).max(100).optional(),
-    page: Joi.number().min(1).max(100).required().messages({
+    page: Joi.number().min(1).max(100).messages({
         "string.empty": "Page is required",
     }),
 });
@@ -202,5 +215,32 @@ exports.createPostValidation = Joi.object({
 });
 exports.updatePostValidation = Joi.object({
     content: Joi.string().min(5).max(150).required(),
+});
+exports.addCommentValidation = Joi.object({
+    postId: Joi.string().hex().length(24).required().messages({
+        "string.empty": "_id is required",
+        "string.hex": "_id must be a valid hex string",
+        "string.length": "_id must be 24 characters long",
+    }),
+    content: Joi.string().trim().required().messages({
+        "string.empty": "Content is required",
+    }),
+    parentComment: Joi.string().hex().length(24).optional().messages({
+        "string.empty": "_id is required",
+        "string.hex": "_id must be a valid hex string",
+        "string.length": "_id must be 24 characters long",
+    }),
+});
+exports.updateCommentValidation = Joi.object({
+    content: Joi.string().trim().required().messages({
+        "string.empty": "Content is required",
+    }),
+});
+exports.updateValidation = Joi.object({
+    _id: Joi.string().hex().length(24).required().messages({
+        "string.empty": "_id is required",
+        "string.hex": "_id must be a valid hex string",
+        "string.length": "_id must be 24 characters long",
+    }),
 });
 //# sourceMappingURL=JoiValidation.js.map

@@ -3,8 +3,8 @@ import * as dotenv from "dotenv";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import post, { IPost } from "../models/post";
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../utils/successMessage";
-import mongoose from "mongoose";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../utils/responseMessages";
+import comment from "../models/comment";
 
 dotenv.config();
 
@@ -14,18 +14,24 @@ export const createPost = async (
   next: NextFunction
 ) => {
   try {
-    const { author, content } = req.body;
+    const userToken = res.locals.user;
+    const { userId, content } = req.body;
     const files = req.files as Express.Multer.File[];
 
-    if (!files || files.length === 0) {
-      return res.status(400).json({ message: "No file uploaded" });
+    if (!userToken) {
+      return next(new ApiError(400, ERROR_MESSAGES.USER_NOT_EXISTS));
     }
+
+    if (!files || files.length === 0) {
+      return next(new ApiError(400, ERROR_MESSAGES.UPLOAD_FAILED));
+    }
+
     //extracting file path
     const filePaths = files.map((file) => file.filename);
 
     const newPost: IPost = new post({
       content,
-      author,
+      userId,
       files: filePaths,
     });
 
@@ -42,7 +48,7 @@ export const createPost = async (
       {
         $lookup: {
           from: "users",
-          localField: "author",
+          localField: "userId",
           foreignField: "_id",
           as: "authorDetails",
         },
@@ -78,33 +84,50 @@ export const updatePost = async (
   next: NextFunction
 ) => {
   try {
+    const userId = res.locals.user._id;
     const { _id } = req.params;
 
-    await post.findByIdAndUpdate(
-      { _id },
+    if (!userId) {
+      return next(new ApiError(404, ERROR_MESSAGES.USER_NOT_EXISTS));
+    }
+
+    const existingPost = await post.findById(_id);
+    if (!existingPost) {
+      return next(new ApiError(404, ERROR_MESSAGES.POST_NOT_FOUND));
+    }
+
+    if (existingPost.userId.toString() !== userId.toString()) {
+      return next(new ApiError(403, ERROR_MESSAGES.UNAUTHORIZED_ACTION));
+    }
+
+    let updatedFiles: string[] = [];
+
+    if (req.files && Array.isArray(req.files)) {
+      updatedFiles = (req.files as Express.Multer.File[]).map(
+        (file) => `${file.filename}`
+      );
+    }
+
+    const updatedPost = await post.findByIdAndUpdate(
+      _id,
       {
         $set: {
           content: req.body.content,
+          files: updatedFiles.length > 0 ? updatedFiles : existingPost.files,
         },
       },
-      {
-        new: true,
-      }
+      { new: true }
     );
 
-    let updatedPostData = await post.findById({ _id });
-
-    if (!updatedPostData) {
+    if (!updatedPost) {
       return next(new ApiError(400, ERROR_MESSAGES.POST_NOT_UPDATED));
-    } else {
-      return res
-        .status(200)
-        .json(
-          new ApiResponse(200, SUCCESS_MESSAGES.POST_UPDATED, updatedPostData)
-        );
     }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, SUCCESS_MESSAGES.POST_UPDATED, updatedPost));
   } catch (error: any) {
-    console.log("Error:", error);
+    console.error("Error", error);
     next(error);
   }
 };
@@ -132,56 +155,9 @@ export const getPostById = async (
       },
       {
         $project: {
-          author: 1,
+          userId: 1,
           content: 1,
-        },
-      }
-    );
-
-    const postDetails = await post.aggregate(pipeline);
-
-    const totalPosts = await post.countDocuments({ author: userId });
-
-    if (!postDetails.length) {
-      return next(new ApiError(400, ERROR_MESSAGES.POST_NOT_FOUND));
-    } else {
-      return res.status(200).json(
-        new ApiResponse(200, SUCCESS_MESSAGES.POST_FOUND, {
-          postDetails,
-          totalPosts,
-        })
-      );
-    }
-  } catch (error: any) {
-    console.log("Error:", error);
-    next(error);
-  }
-};
-
-export const getPostByUserId = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = res.locals.user;
-
-    if (!userId) {
-      return next(new ApiError(404, ERROR_MESSAGES.USER_NOT_EXISTS));
-    }
-
-    const pipeline: any[] = [];
-
-    pipeline.push(
-      {
-        $match: {
-          author: new mongoose.Types.ObjectId(userId),
-        },
-      },
-      {
-        $project: {
-          author: 1,
-          content: 1,
+          files: 1,
         },
       }
     );
@@ -218,7 +194,7 @@ export const getPostsList = async (
       {
         $lookup: {
           from: "users",
-          localField: "author",
+          localField: "userId",
           foreignField: "_id",
           as: "authorDetails",
         },
@@ -259,6 +235,10 @@ export const getPostsList = async (
         userName: "$authorDetails.userName",
         email: "$authorDetails.email",
         content: 1,
+        profileImage: 1,
+        likeCount: 1,
+        commentCount: 1,
+        files: 1,
       },
     });
 
@@ -296,6 +276,12 @@ export const deletePost = async (
 
     if (!userId) {
       return next(new ApiError(404, ERROR_MESSAGES.USER_NOT_EXISTS));
+    }
+
+    const existingPost = await post.findById(_id);
+
+    if (existingPost?.userId.toString() !== userId.toString()) {
+      return next(new ApiError(403, ERROR_MESSAGES.UNAUTHORIZED_ACTION));
     }
 
     const deleted = await post.findByIdAndUpdate(

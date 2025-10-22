@@ -1,0 +1,43 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ERROR_MESSAGES = exports.SUCCESS_MESSAGES = void 0;
+exports.SUCCESS_MESSAGES = {
+    USER_CREATED: "User created successfully!",
+    EMAIL_NOT_EXISTS: "Email not exists",
+    LOGIN_USER_SUCCESSFULLY: "Login Successful",
+    OTP_VERIFIED: "OTP verified successfully",
+    USER_DETAILS_UPDATED: "User social details updated successfully",
+    USER_LIST_FETCHED: "Users fetched successfully",
+    USER_DETAILS: "User Details fetched successfully",
+    POST_CREATED: "Post created successfully",
+    POST_UPDATED: "Post updated successfully",
+    POST_FOUND: "Post fetched successfully",
+    POST_LIST_FOUND: "Post list Fetched successfully",
+    POST_DELETED: "Post deleted successfully",
+    COMMENT_ADDED: "Comment added successfully",
+    COMMENT_UPDATED: "Comment updated successfully",
+    COMMENT_DELETED: "Comment deleted successfully",
+};
+exports.ERROR_MESSAGES = {
+    USER_NOT_CREATED: "User not created",
+    USER_ALREADY_EXISTS: "User already exists",
+    USER_NOT_REGISTERED: "You are not registered, Register Yourself",
+    EMAIL_EXISTED: "Email existed",
+    PASSWORD_INCORRECT: "Invalid credentials",
+    MOBILE_NUMBER_NOT_EXISTS: "Mobile Number not exists, Register youself first",
+    OTP_SEND_SUCCESSFULLY: "OTP Send successfully",
+    USER_NOT_EXISTS: "User not exists",
+    INVALID_OTP: "Invalid OTP",
+    OTP_EXPIRED: "OTP expired",
+    USER_LIST_NOT_FOUND: "Users list not found",
+    POST_NOT_CREATED: "Post not created",
+    POST_NOT_UPDATED: "Post not updated",
+    POST_NOT_FOUND: "Post not found",
+    POST_NOT_DELETED: "Post not deleted",
+    UNAUTHORIZED_ACTION: "You are not authorized user",
+    COMMENT_NOT_FOUND: "Comment not found",
+    COMMENT_NOT_UPDATED: "Comment not updated",
+    COMMENT_NOT_DELETED: "Comment not deleted",
+    UPLOAD_FAILED: "No file uploaded",
+};
+//# sourceMappingURL=responseMessages.js.map

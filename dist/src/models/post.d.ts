@@ -1,8 +1,8 @@
 import mongoose, { Document, ObjectId } from "mongoose";
 export interface IPost extends Document {
     content: string;
-    author: ObjectId;
-    media: string;
+    userId: ObjectId;
+    files: string[];
     likeCount: number;
     commentCount: number;
     isDeleted: boolean;

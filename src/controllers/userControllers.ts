@@ -5,7 +5,9 @@ import * as jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../utils/successMessage";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "../utils/responseMessages";
+import mongoose from "mongoose";
+import post from "../models/post";
 
 dotenv.config();
 
@@ -188,39 +190,37 @@ export const MobileOtpVerification = async (
   next: NextFunction
 ) => {
   try {
-    const { otp } = req.body;
-    const { _id } = req.query;
+    const { otp, mobileNumber } = req.body;
 
-    const userExists = await user.findById({ _id });
-
+    const userExists = await user.findOne({ mobileNumber });
     if (!userExists) {
       return next(new ApiError(400, ERROR_MESSAGES.USER_NOT_EXISTS));
     }
 
-    const OTP_VALIDITY_DURATION = 2 * 60 * 1000;
-
-    if (userExists.otp == otp) {
-      if (
-        !userExists.otpExpiration ||
-        new Date(userExists.otpExpiration).getTime() + OTP_VALIDITY_DURATION <
-          Date.now()
-      ) {
-        return next(new ApiError(400, ERROR_MESSAGES.OTP_EXPIRED));
-      } else {
-        await user.updateOne(
-          { _id },
-          { $set: { otp: null, otpExpiration: null } }
-        );
-
-        return res
-          .status(201)
-          .json(new ApiResponse(200, SUCCESS_MESSAGES.OTP_VERIFIED, {}));
-      }
-    } else {
+    if (userExists.otp !== otp) {
       return next(new ApiError(400, ERROR_MESSAGES.INVALID_OTP));
     }
+
+    const generatedTime = new Date(userExists.otpExpiration).getTime();
+    const currentTime = Date.now();
+    const timeDifference = currentTime - generatedTime;
+
+    if (!userExists.otpExpiration || timeDifference > 2 * 60 * 1000) {
+      return next(new ApiError(400, ERROR_MESSAGES.OTP_EXPIRED));
+    }
+
+    await user.updateOne(
+      { mobileNumber },
+      { $set: { otp: null, otpExpiration: null } }
+    );
+
+    // const userDetails = await user.findOne({ mobileNumber });
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, SUCCESS_MESSAGES.OTP_VERIFIED, userExists));
   } catch (error: any) {
-    console.error("Error:", error);
+    console.error("Error", error);
     next(error);
   }
 };
@@ -243,8 +243,8 @@ export const SSOLogin = async (
       userExists.socialDetails = [];
 
       userExists.socialDetails.push({
-        SSOType,
-        socialId,
+        SSOType: SSOType,
+        socialId: socialId,
       });
 
       await userExists.save();
@@ -298,6 +298,54 @@ export const getUsersById = async (
   }
 };
 
+export const getUserPosts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = res.locals.user;
+
+    if (!userId) {
+      return next(new ApiError(404, ERROR_MESSAGES.USER_NOT_EXISTS));
+    }
+
+    const pipeline: any[] = [];
+
+    pipeline.push(
+      {
+        $match: {
+          author: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      {
+        $project: {
+          author: 1,
+          content: 1,
+        },
+      }
+    );
+
+    const postDetails = await post.aggregate(pipeline);
+
+    const totalPosts = await post.countDocuments({ author: userId });
+
+    if (!postDetails.length) {
+      return next(new ApiError(400, ERROR_MESSAGES.POST_NOT_FOUND));
+    } else {
+      return res.status(200).json(
+        new ApiResponse(200, SUCCESS_MESSAGES.POST_FOUND, {
+          postDetails,
+          totalPosts,
+        })
+      );
+    }
+  } catch (error: any) {
+    console.log("Error:", error);
+    next(error);
+  }
+};
+
 export const getUsersList = async (
   req: Request,
   res: Response,
@@ -310,63 +358,57 @@ export const getUsersList = async (
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
-    const pipeline: any[] = [];
-
-    if (searchTerm) {
-      pipeline.push({
-        $match: {
+    const searchCondition = searchTerm
+      ? {
           $or: [
             { userName: { $regex: searchTerm, $options: "i" } },
             { fullName: { $regex: searchTerm, $options: "i" } },
             { email: { $regex: searchTerm, $options: "i" } },
           ],
+        }
+      : {};
+
+    const pipeline: any[] = [];
+
+    if (searchTerm) {
+      pipeline.push({
+        $match: searchCondition,
+      });
+
+      pipeline.push({
+        $project: {
+          userName: 1,
+          fullName: 1,
+          email: 1,
+          isEmailVerified: 1,
+          mobileNumber: 1,
+          isMobileVerified: 1,
+          dateOfBirth: 1,
         },
       });
+
+      pipeline.push(
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit }
+      );
+
+      const users = await user.aggregate(pipeline);
+
+      const totalUsers = await user.countDocuments(searchCondition);
+
+      return res.status(200).json(
+        new ApiResponse(200, SUCCESS_MESSAGES.USER_LIST_FETCHED, {
+          pagination: {
+            total: totalUsers,
+            page,
+            limit,
+            totalPages: Math.ceil(totalUsers / limit),
+          },
+          users,
+        })
+      );
     }
-
-    pipeline.push({
-      $project: {
-        userName: 1,
-        fullName: 1,
-        email: 1,
-        isEmailVerified: 1,
-        mobileNumber: 1,
-        isMobileVerified: 1,
-        dateOfBirth: 1,
-      },
-    });
-
-    pipeline.push(
-      { $sort: { createdAt: -1 } },
-      { $skip: skip },
-      { $limit: limit }
-    );
-
-    const users = await user.aggregate(pipeline);
-
-    const totalUsers = await user.countDocuments(
-      searchTerm
-        ? {
-            $or: [
-              { userName: { $regex: searchTerm, $options: "i" } },
-              { fullName: { $regex: searchTerm, $options: "i" } },
-              { email: { $regex: searchTerm, $options: "i" } },
-            ],
-          }
-        : {}
-    );
-
-    return res.status(200).json(
-      new ApiResponse(200, SUCCESS_MESSAGES.USER_LIST_FETCHED, {
-        pagination: {
-          total: totalUsers,
-          page,
-          limit,
-          totalPages: Math.ceil(totalUsers / limit),
-        },
-        users,
-      })
-    );
   } catch (error) {
     console.error("Error", error);
     next(error);
